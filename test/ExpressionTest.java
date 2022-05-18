@@ -1,75 +1,45 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExpressionTest {
 
-    Expression expression;
+    static class TestCase {
+        private int expected;
+        private String expression;
+        private String name;
 
-    @BeforeEach
-    void setExpression() {
-        expression = new Expression();
+        private TestCase(int i, String s, String name) {
+            this.name = name;
+            this.expected = i;
+            this.expression = s;
+        }
     }
 
-    @Test
-    @DisplayName("testNull")
-    void testNull() {
-        assertEquals(-1, expression.solve(null));
+    @TestFactory
+    Stream<DynamicNode> testExpression() {
+        return Stream.of(
+                new TestCase(-1, null, "testNull"),
+                new TestCase(-1, "", "testEmpty"),
+                new TestCase(-1, "*", "testSingleOperator"),
+                new TestCase(123, "123", "testSingleNumber"),
+                new TestCase(26, "24+5*2/5*1", "testOrderOfOperations"),
+                new TestCase(1, "24/6/2/2", "testDivision"),
+                new TestCase(576, "2*2*6*24", "testMultiplication"),
+                new TestCase(34, "2+2+6+24", "testAddition"),
+                new TestCase(2, "24/9", "testUnequalDivision"),
+                new TestCase(0, "8/9", "testFractionDivision"),
+                new TestCase(-3, "2147483647+1", "testOverflow"),
+                new TestCase(16, "2*4+2*4", "testSameEquation")
+        ).map(testCase -> DynamicTest.dynamicTest(
+                testCase.name,
+                () -> {
+                    Expression expression = new Expression();
+                    int result = expression.solve2(testCase.expression);
+                    assertEquals(testCase.expected, result);
+                })
+        );
     }
-
-    @Test
-    @DisplayName("testEmpty")
-    void testEmpty() {
-        assertEquals(-1, expression.solve(""));
-    }
-
-    @Test
-    @DisplayName("testSingleNumber")
-    void testSingleNumber() {
-        assertEquals(123, expression.solve("123"));
-    }
-    @Test
-    @DisplayName("testSingleOperator")
-    void testSingleOperator() {
-        assertEquals(-2, expression.solve("*"));
-    }
-
-    @Test
-    @DisplayName("testOrderOfOperations")
-    void testOrderOfOperations() {
-        assertEquals(26, expression.solve("24+5*2/5*1"));
-    }
-
-    @Test
-    @DisplayName("testDivision")
-    void testDivision() {
-        assertEquals(1, expression.solve("24/6/2/2"));
-    }
-
-    @Test
-    @DisplayName("testMultiplication")
-    void testMultiplication() {
-        assertEquals(576, expression.solve("2*2*6*24"));
-    }
-
-    @Test
-    @DisplayName("testAddition")
-    void testAddition() {
-        assertEquals(34, expression.solve("2+2+6+24"));
-    }
-
-    @Test
-    @DisplayName("testUnequalDivision")
-    void testUnequalDivision() {
-        assertEquals(2, expression.solve("24/9"));
-    }
-
-    @Test
-    @DisplayName("testOverflow")
-    void testOverflow() {
-        assertEquals(-3, expression.solve("2147483647+1"));
-    }
-
 }
