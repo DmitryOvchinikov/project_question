@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ExpressionTest {
+public class SimpleExpressionTest {
 
     static class TestCase {
         private final int expected;
@@ -19,28 +19,30 @@ public class ExpressionTest {
     }
 
     @TestFactory
-    Stream<DynamicNode> testExpression() {
+    Stream<DynamicNode> testSimpleExpression() {
         return Stream.of(
                 new TestCase(-1, null, "testNull"),
                 new TestCase(-1, "", "testEmpty"),
                 new TestCase(-1, "*", "testSingleOperator"),
-                new TestCase(123, "123", "testSingleNumber"),
-                new TestCase(26, "24+5*2/5*1", "testOrderOfOperations"),
-                new TestCase(1, "24/6/2/2", "testDivision"),
-                new TestCase(576, "2*2*6*24", "testMultiplication"),
-                new TestCase(34, "2+2+6+24", "testAddition"),
+                new TestCase(-1, "5-4", "testUnknownOperator"),
+                new TestCase(-1, "123", "testSingleNumber"),
+                new TestCase(12, "24/2", "testDivision"),
+                new TestCase(144, "6*24", "testMultiplication"),
+                new TestCase(30, "6+24", "testAddition"),
                 new TestCase(2, "24/9", "testUnequalDivision"),
                 new TestCase(0, "8/9", "testFractionDivision"),
                 new TestCase(-3, "2147483647+1", "testOverflow"),
-                new TestCase(-2, "50+2/0", "testZeroDivision"),
-                new TestCase(-2, "25+0/0", "testZeroByZeroDivision"),
+                new TestCase(-3, "2/0", "testZeroDivision"),
+                new TestCase(-3, "0/0", "testZeroByZeroDivision"),
                 new TestCase(0, "0/5", "testZeroDivides"),
-                new TestCase(45, "25     +     10   * 2", "testWhiteSpaces"),
-                new TestCase(16, "2*4+2*4", "testSameEquation")
+                new TestCase(35, "   25     +     10   ", "testWhiteSpaces"),
+                new TestCase(-1, "1+2*3", "testBiggerExpression"),
+                new TestCase(-1, "5*b", "testWithWrongParam"),
+                new TestCase(-1, "a*b", "testWithWrongParams")
         ).map(testCase -> DynamicTest.dynamicTest(
                 testCase.name,
                 () -> {
-                    Expression expression = new Expression();
+                    SimpleExpression expression = new SimpleExpression();
                     int result = expression.solve(testCase.expression);
                     assertEquals(testCase.expected, result);
                 })
